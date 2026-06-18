@@ -36,8 +36,9 @@ end
 -- These three groups above also all use the game's main camera instance as their targets since we want gameplay objects, floor and visual effects to be drawn according to the camera's transform.
 -- Finally, the UI group is the one that doesn't have a camera attached to it because we want its objects to be drawn in fixed locations on the screen.
 -- And this group is also drawn last because generally UI elements go on top of literally everything else.
-Group = Object:extend()
+Group = EngineNode:extend()
 function Group:init()
+  EngineNode.init_node(self)
   self.t = Trigger()
   self.camera = camera
   self.objects = {}
@@ -75,6 +76,7 @@ function Group:update(dt)
       if self.objects[i].destroy then self.objects[i]:destroy() end
       self.objects.by_id[self.objects[i].id] = nil
       table.delete(self.objects.by_class[getmetatable(self.objects[i])], function(v) return v.id == self.objects[i].id end)
+      self:remove(self.objects[i])
       table.remove(self.objects, i)
     end
   end
@@ -166,6 +168,9 @@ function Group:destroy()
   self.objects = {}
   self.objects.by_id = {}
   self.objects.by_class = {}
+  self.children = {}
+  self.children.by_tag = {}
+  self.children.by_id = {}
   if self.world then
     self.world:destroy()
     self.world = nil
@@ -189,6 +194,7 @@ function Group:add(object)
   if not self.objects.by_class[class] then self.objects.by_class[class] = {} end
   table.insert(self.objects.by_class[class], object)
   table.insert(self.objects, object)
+  self:append(object, object.node_tag)
   return object
 end
 

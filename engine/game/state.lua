@@ -33,8 +33,10 @@ end
 --   main:go_to'level_1'
 -- main:go_to automatically calls on_exit for the currently active state and on_enter for the new one.
 -- You can access the currently active state with main.current.
-State = Object:extend()
+State = EngineNode:extend()
+State:implement(EngineNode)
 function State:init_state(name)
+  EngineNode.init_node(self, {node_tag = name})
   self.name = name or random:uid()
   self.active = false
 end
@@ -54,7 +56,7 @@ end
 
 
 -- The main state. This is a global state that is always active and contains all other states.
-Main = Object:extend()
+Main = EngineNode:extend()
 Main:implement(State)
 function Main:init(name)
   self:init_state(name)
@@ -84,7 +86,9 @@ end
 
 
 function Main:add(state)
+  if self.states[state.name] then self:remove(self.states[state.name]) end
   self.states[state.name] = state
+  self:append(state, state.name)
 end
 
 

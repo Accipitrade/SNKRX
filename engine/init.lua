@@ -5,6 +5,7 @@ if not path:find("init") then
   require(path .. ".external")
   require(path .. ".graphics.graphics")
   require(path .. ".game.object")
+  require(path .. ".game.node")
   require(path .. ".system")
   require(path .. ".datastructures.graph")
   require(path .. ".datastructures.grid")
