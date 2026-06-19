@@ -44,6 +44,7 @@ function BuyScreen:on_enter(from, level, loop, units, passives, shop_level, shop
   self.passives = passives
   self.shop_level = shop_level
   self.shop_xp = shop_xp
+  self.reroll_cost = 2
   camera.x, camera.y = gw/2, gh/2
   max_units = math.clamp(7 + current_new_game_plus + self.loop, 7, 12)
 
@@ -89,8 +90,8 @@ function BuyScreen:on_enter(from, level, loop, units, passives, shop_level, shop
       {text = '[fg]At [yellow]Lv.3[fg] heroes unlock special effects.', font = pixul_font, height_multiplier = 2.2},
       {text = '[fg]Hire heroes of the same classes to unlock class passives:', font = pixul_font, height_multiplier = 1.2},
       {text = '[fg]Each hero can have between [yellow]1 to 3[fg] classes.', font = pixul_font, height_multiplier = 2.2},
-      {text = '[fg]You gain [yellow]1 interest per 5 gold[fg], up to a maximum of 5.', font = pixul_font, height_multiplier = 1.2},
-      {text = "[fg]This means that saving above [yellow]25 gold[fg] doesn't yield more interest.", font = pixul_font, height_multiplier = 2.2},
+      {text = '[fg]You gain [yellow]1 interest per 5 gold[fg] with no base cap.', font = pixul_font, height_multiplier = 1.2},
+      {text = "[fg]This means larger savings keep producing more interest.", font = pixul_font, height_multiplier = 2.2},
       {text = "[yellow, wavy_mid]Good luck!", font = pixul_font, height_multiplier = 2.2, alignment = 'center'},
     }}
 
@@ -982,8 +983,8 @@ function RerollButton:init(args)
   self:init_game_object(args)
   self.interact_with_mouse = true
   if self.parent:is(BuyScreen) then
-    self.shape = Rectangle(self.x, self.y, 54, 16)
-    self.text = Text({{text = '[bg10]reroll: [yellow]2', font = pixul_font, alignment = 'center'}}, global_text_tags)
+    self.shape = Rectangle(self.x, self.y, 62, 16)
+    self.text = Text({{text = '[bg10]reroll: [yellow]' .. tostring(self:get_reroll_cost()), font = pixul_font, alignment = 'center'}}, global_text_tags)
   elseif self.parent:is(Arena) then
     self.shape = Rectangle(self.x, self.y, 60, 16)
     local merchant
@@ -1003,12 +1004,29 @@ function RerollButton:init(args)
 end
 
 
+function RerollButton:get_reroll_cost()
+  if self.parent:is(BuyScreen) then
+    return self.parent.reroll_cost or 2
+  elseif self.parent:is(Arena) then
+    return self.free_reroll and 0 or 5
+  end
+  return 0
+end
+
+
+function RerollButton:set_reroll_text(tag)
+  local cost = self:get_reroll_cost()
+  self.text:set_text{{text = tag .. 'reroll: [yellow]' .. tostring(cost), font = pixul_font, alignment = 'center'}}
+end
+
+
 function RerollButton:update(dt)
   self:update_game_object(dt)
 
   if (self.selected and input.m1.pressed) or input.r.pressed then
     if self.parent:is(BuyScreen) then
-      if gold < 2 then
+      local cost = self:get_reroll_cost()
+      if gold < cost then
         self.spring:pull(0.2, 200, 10)
         self.selected = true
         error1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
@@ -1025,7 +1043,9 @@ function RerollButton:update(dt)
         self.parent:set_cards(self.parent.shop_level, true)
         self.selected = true
         self.spring:pull(0.2, 200, 10)
-        gold = gold - 2
+        gold = gold - cost
+        self.parent.reroll_cost = cost + 1
+        self:set_reroll_text(self.selected and '[fgm5]' or '[bg10]')
         self.parent.shop_text:set_text{{text = '[wavy_mid, fg]shop [fg]- [fg, nudge_down]gold: [yellow, nudge_down]' .. gold, font = pixul_font, alignment = 'center'}}
         system.save_run(self.parent.level, self.parent.loop, gold, self.parent.units, self.parent.passives, self.parent.shop_level, self.parent.shop_xp, run_passive_pool, locked_state)
       end
@@ -1054,7 +1074,10 @@ function RerollButton:update(dt)
       end
     end
 
-    if input.r.pressed then self.selected = false end
+    if input.r.pressed then
+      self.selected = false
+      if self.parent:is(BuyScreen) then self:set_reroll_text('[bg10]') end
+    end
   end
 end
 
@@ -1076,7 +1099,7 @@ function RerollButton:on_mouse_enter()
   pop2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
   self.selected = true
   if self.parent:is(BuyScreen) then
-    self.text:set_text{{text = '[fgm5]reroll: 2', font = pixul_font, alignment = 'center'}}
+    self:set_reroll_text('[fgm5]')
   elseif self.parent:is(Arena) then
     if self.free_reroll then
       self.text:set_text{{text = '[fgm5]reroll: 0', font = pixul_font, alignment = 'center'}}
@@ -1090,7 +1113,7 @@ end
 
 function RerollButton:on_mouse_exit()
   if self.parent:is(BuyScreen) then
-    self.text:set_text{{text = '[bg10]reroll: [yellow]2', font = pixul_font, alignment = 'center'}}
+    self:set_reroll_text('[bg10]')
   elseif self.parent:is(Arena) then
     if self.free_reroll then
       self.text:set_text{{text = '[fgm5]reroll: [yellow]0', font = pixul_font, alignment = 'center'}}

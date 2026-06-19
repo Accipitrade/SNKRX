@@ -59,6 +59,7 @@ function Arena:on_enter(from, level, loop, units, passives, shop_level, shop_xp,
   self.main:enable_trigger_between('ghost', 'player')
 
   self.gold_picked_up = 0
+  self.natural_gold_cap = random:int(1, 4)
   self.damage_dealt = 0
   self.damage_taken = 0
   self.main_slow_amount = 1
@@ -101,6 +102,10 @@ function Arena:on_enter(from, level, loop, units, passives, shop_level, shop_xp,
     local chp = CharacterHP{group = self.effects, x = self.x1 + 8 + (unit.ii-1)*22, y = self.y2 + 14, parent = unit}
     unit.character_hp = chp
   end
+
+  self.t:every({12, 20}, function()
+    self:spawn_natural_gold()
+  end, nil, nil, 'natural_gold')
 
   if self.level == 1000 then
     self.level_1000_text = Text2{group = self.ui, x = gw/2, y = gh/2, lines = {{text = '[fg, wavy_mid]SNKRX', font = fat_font, alignment = 'center'}}}
@@ -956,8 +961,28 @@ function Arena:gain_gold()
     end
   end
   self.gold_gained = random:int(level_to_gold_gained[self.level][1], level_to_gold_gained[self.level][2])
-  self.interest = math.min(math.floor(gold/5), 5) + math.min((merchant and math.floor(gold/10) or 0), 10)
+  self.interest = math.floor(gold/5) + math.min((merchant and math.floor(gold/10) or 0), 10)
   gold = gold + self.gold_gained + self.gold_picked_up + self.interest
+end
+
+
+function Arena:get_natural_gold_count()
+  local n = 0
+  for _, coin in ipairs(self.main:get_objects_by_class(Gold)) do
+    if coin.natural_spawn then n = n + 1 end
+  end
+  return n
+end
+
+
+function Arena:spawn_natural_gold()
+  if self.paused or self.died or self.won or self.transitioning then return end
+  if not self.main or not self.main.world then return end
+  if self:get_natural_gold_count() >= self.natural_gold_cap then return end
+
+  local x = random:float(self.x1 + 24, self.x2 - 24)
+  local y = random:float(self.y1 + 24, self.y2 - 24)
+  Gold{group = self.main, x = x, y = y, natural_spawn = true}
 end
 
 
