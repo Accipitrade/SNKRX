@@ -447,8 +447,7 @@ function BeachBallUnit:draw()
       end
     else
       local outline_w, outline_h = math.max(self.shape.w - 1, 0), math.max(self.shape.h - 1, 0)
-      local fill_h = outline_h*hp_ratio
-      graphics.rectangle(self.x, self.y + outline_h/2 - fill_h/2, outline_w, fill_h, 2, 2, green[0])
+      draw_unit_liquid_health(self, outline_w, outline_h, hp_ratio, green[0])
       graphics.rectangle(self.x, self.y, outline_w, outline_h, 3, 3, body_color, 1)
     end
   graphics.pop()

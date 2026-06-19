@@ -1513,21 +1513,58 @@ function Player:draw_default_body()
 end
 
 
+function draw_unit_liquid_health(unit, outline_w, outline_h, hp_ratio, fill_color)
+  if hp_ratio <= 0 then return end
+
+  local x, y, r = unit.x, unit.y, unit.r or 0
+  local dx = x - (unit.liquid_last_x or x)
+  local dy = y - (unit.liquid_last_y or y)
+  local dr = math.loop(r - (unit.liquid_last_r or r), 2*math.pi)
+  if dr > math.pi then dr = dr - 2*math.pi end
+  unit.liquid_slosh = (unit.liquid_slosh or 0)*0.86 + math.clamp(dx*0.35 + dy*0.12 + dr*8, -4, 4)
+  unit.liquid_last_x, unit.liquid_last_y, unit.liquid_last_r = x, y, r
+
+  graphics.draw_with_mask(function()
+    graphics.push(x, y, -r)
+      if hp_ratio >= 0.985 then
+        graphics.rectangle(x, y, outline_w + 2, outline_h + 2, 2, 2, fill_color)
+      else
+        local t = love.timer.getTime()
+        local left, right = x - outline_w/2 - 2, x + outline_w/2 + 2
+        local bottom = y + outline_h/2 + 2
+        local surface = y + outline_h/2 - outline_h*hp_ratio
+        local amplitude = math.clamp(1.1 + math.abs(unit.liquid_slosh)*0.3, 1.1, 3.2)
+        local phase = t*5.5 + x*0.09 - y*0.07 + unit.liquid_slosh
+        local vertices = {left, bottom}
+        for i = 0, 7 do
+          local px = math.lerp(i/7, left, right)
+          local slosh_tilt = unit.liquid_slosh*math.remap(i, 0, 7, -0.35, 0.35)
+          local py = surface + math.sin(phase + i*0.9)*amplitude + slosh_tilt
+          table.insert(vertices, px)
+          table.insert(vertices, py)
+        end
+        table.insert(vertices, right)
+        table.insert(vertices, bottom)
+        graphics.polygon(vertices, fill_color)
+      end
+    graphics.pop()
+  end, function()
+    graphics.rectangle(x, y, outline_w, outline_h, 3, 3, fg[0])
+  end)
+end
+
+
 function Player:draw_health_body()
   local body_color = (self.hfx.hit.f or self.hfx.shoot.f) and fg[0] or self.color
   local outline_color = self.magician_invulnerable and blue[0] or body_color
   local hp_ratio = math.clamp((self.hp or 0)/(self.max_hp or 1), 0, 1)
   local outline_w, outline_h = math.max(self.shape.w - 1, 0), math.max(self.shape.h - 1, 0)
-  local inner_w, inner_h = outline_w, outline_h
-  local fill_h = inner_h*hp_ratio
 
   if self.magician_invulnerable then
     graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 3, 3, blue_transparent)
   end
 
-  if fill_h > 0 then
-    graphics.rectangle(self.x, self.y + inner_h/2 - fill_h/2, inner_w, fill_h, 2, 2, body_color)
-  end
+  draw_unit_liquid_health(self, outline_w, outline_h, hp_ratio, body_color)
   graphics.rectangle(self.x, self.y, outline_w, outline_h, 3, 3, outline_color, 1)
 end
 
