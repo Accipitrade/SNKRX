@@ -1518,7 +1518,7 @@ function Player:draw_health_body()
   local outline_color = self.magician_invulnerable and blue[0] or body_color
   local hp_ratio = math.clamp((self.hp or 0)/(self.max_hp or 1), 0, 1)
   local outline_w, outline_h = math.max(self.shape.w - 1, 0), math.max(self.shape.h - 1, 0)
-  local inner_w, inner_h = math.max(self.shape.w - 3, 0), math.max(self.shape.h - 3, 0)
+  local inner_w, inner_h = outline_w, outline_h
   local fill_h = inner_h*hp_ratio
 
   if self.magician_invulnerable then

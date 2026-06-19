@@ -6,6 +6,7 @@ require 'buy_screen'
 require 'objects'
 require 'player'
 require 'enemies'
+require 'beach_ball'
 require 'media'
 
 
