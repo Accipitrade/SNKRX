@@ -230,6 +230,9 @@ end
 function Unit:calculate_stats(first_run)
   if self:is(Player) then
     self.base_hp = 100*math.pow(2, self.level-1)
+    if self.character == 'orbiter' and self.level >= 2 then
+      self.base_hp = 1.5*self.base_hp
+    end
     self.base_dmg = 10*math.pow(2, self.level-1)
     self.base_mvspd = 75
   elseif self:is(Seeker) then

@@ -209,6 +209,17 @@ function BuyScreen:update(dt)
     end
   end
 
+  if debug_money and input.g.pressed and not self.transitioning and not self.in_tutorial and not self.paused then
+    self:gain_gold(50)
+    system.save_run(self.level, self.loop, gold, self.units, self.passives, self.shop_level, self.shop_xp, run_passive_pool, locked_state)
+  end
+
+  if debug_money and input.t.pressed and not self.transitioning and not self.in_tutorial and not self.paused then
+    local character = debug_shop_units[debug_shop_index]
+    self:set_debug_cards(character)
+    debug_shop_index = debug_shop_index % #debug_shop_units + 1
+  end
+
   for _, part in ipairs(self.characters) do
     part.y = 40 + (part.i-1)*19
   end
@@ -332,6 +343,17 @@ end
 function BuyScreen:gain_gold(amount)
   gold = gold + amount or 0
   self.shop_text:set_text{{text = '[wavy_mid, fg]shop [fg]- [fg, nudge_down]gold: [yellow, nudge_down]' .. gold, font = pixul_font, alignment = 'center'}}
+end
+
+
+function BuyScreen:set_debug_cards(character)
+  if self.cards then for i = 1, 3 do if self.cards[i] then self.cards[i]:die(true) end end end
+  self.cards = {}
+  self.cards[1] = ShopCard{group = self.main, x = 60, y = 75, w = 80, h = 90, unit = character, parent = self, i = 1}
+  self.cards[2] = ShopCard{group = self.main, x = 140, y = 75, w = 80, h = 90, unit = character, parent = self, i = 2}
+  self.cards[3] = ShopCard{group = self.main, x = 220, y = 75, w = 80, h = 90, unit = character, parent = self, i = 3}
+  locked_state = {locked = self.locked, cards = {self.cards[1].unit, self.cards[2].unit, self.cards[3].unit}}
+  system.save_run(self.level, self.loop, gold, self.units, self.passives, self.shop_level, self.shop_xp, run_passive_pool, locked_state)
 end
 
 

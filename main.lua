@@ -325,6 +325,7 @@ function init()
     ['vulcanist'] = 'Vulcanist',
     ['warden'] = 'Warden',
     ['psychic'] = 'Psychic',
+    ['orbiter'] = 'Orbiter',
     ['miner'] = 'Miner',
     ['merchant'] = 'Merchant',
     ['usurer'] = 'Usurer',
@@ -385,6 +386,7 @@ function init()
     ['vulcanist'] = red[0],
     ['warden'] = yellow[0],
     ['psychic'] = fg[0],
+    ['orbiter'] = fg[0],
     ['miner'] = yellow2[0],
     ['merchant'] = yellow2[0],
     ['usurer'] = purple[0],
@@ -445,6 +447,7 @@ function init()
     ['vulcanist'] = 'red',
     ['warden'] = 'yellow',
     ['psychic'] = 'fg',
+    ['orbiter'] = 'fg',
     ['miner'] = 'yellow2',
     ['merchant'] = 'yellow2',
     ['usurer'] = 'purple',
@@ -463,14 +466,14 @@ function init()
     ['outlaw'] = {'warrior', 'rogue'},
     ['blade'] = {'warrior', 'nuker'},
     ['elementor'] = {'mage', 'nuker'},
-    -- ['saboteur'] = {'rogue', 'conjurer', 'nuker'},
+    ['saboteur'] = {'rogue', 'conjurer', 'nuker'},
     ['bomber'] = {'nuker', 'conjurer'},
     ['stormweaver'] = {'enchanter'},
     ['sage'] = {'nuker', 'forcer'},
     ['squire'] = {'warrior', 'enchanter'},
     ['cannoneer'] = {'ranger', 'nuker'},
     ['dual_gunner'] = {'ranger', 'rogue'},
-    -- ['hunter'] = {'ranger', 'conjurer', 'forcer'},
+    ['hunter'] = {'ranger', 'conjurer', 'forcer'},
     ['sentry'] = {'ranger', 'conjurer'},
     ['chronomancer'] = {'mage', 'enchanter'},
     ['spellblade'] = {'mage', 'rogue'},
@@ -498,13 +501,14 @@ function init()
     ['infestor'] = {'curser', 'swarmer'},
     ['flagellant'] = {'psyker', 'enchanter'},
     ['arcanist'] = {'sorcerer'},
-    -- ['illusionist'] = {'sorcerer', 'conjurer'},
+    ['illusionist'] = {'sorcerer', 'conjurer'},
     ['artificer'] = {'sorcerer', 'conjurer'},
     ['witch'] = {'sorcerer', 'voider'},
     ['silencer'] = {'sorcerer', 'curser'},
     ['vulcanist'] = {'sorcerer', 'nuker'},
     ['warden'] = {'sorcerer', 'forcer'},
     ['psychic'] = {'sorcerer', 'psyker'},
+    ['orbiter'] = {'psyker'},
     ['miner'] = {'mercenary'},
     ['merchant'] = {'mercenary'},
     ['usurer'] = {'curser', 'mercenary', 'voider'},
@@ -523,14 +527,14 @@ function init()
     ['outlaw'] = '[yellow]Warrior, [red]Rogue',
     ['blade'] = '[yellow]Warrior, [red]Nuker',
     ['elementor'] = '[blue]Mage, [red]Nuker',
-    -- ['saboteur'] = '[red]Rogue, [orange]Conjurer, [red]Nuker',
+    ['saboteur'] = '[red]Rogue, [orange]Conjurer, [red]Nuker',
     ['bomber'] = '[red]Nuker, [orange]Builder',
     ['stormweaver'] = '[blue]Enchanter',
     ['sage'] = '[red]Nuker, [yellow]Forcer',
     ['squire'] = '[yellow]Warrior, [blue]Enchanter',
     ['cannoneer'] = '[green]Ranger, [red]Nuker',
     ['dual_gunner'] = '[green]Ranger, [red]Rogue',
-    -- ['hunter'] = '[green]Ranger, [orange]Conjurer, [yellow]Forcer',
+    ['hunter'] = '[green]Ranger, [orange]Conjurer, [yellow]Forcer',
     ['sentry'] = '[green]Ranger, [orange]Builder',
     ['chronomancer'] = '[blue]Mage, Enchanter',
     ['spellblade'] = '[blue]Mage, [red]Rogue',
@@ -558,13 +562,14 @@ function init()
     ['infestor'] = '[purple]Curser, [orange]Swarmer',
     ['flagellant'] = '[fg]Psyker, [blue]Enchanter',
     ['arcanist'] = '[blue2]Sorcerer',
-    -- ['illusionist'] = '[blue2]Sorcerer, [orange]Conjurer',
+    ['illusionist'] = '[blue2]Sorcerer, [orange]Conjurer',
     ['artificer'] = '[blue2]Sorcerer, [orange]Builder',
     ['witch'] = '[blue2]Sorcerer, [purple]Voider',
     ['silencer'] = '[blue2]Sorcerer, [purple]Curser',
     ['vulcanist'] = '[blue2]Sorcerer, [red]Nuker',
     ['warden'] = '[blue2]Sorcerer, [yellow]Forcer',
     ['psychic'] = '[blue2]Sorcerer, [fg]Psyker',
+    ['orbiter'] = '[fg]Psyker',
     ['miner'] = '[yellow2]Mercenary',
     ['merchant'] = '[yellow2]Mercenary',
     ['usurer'] = '[purple]Curser, [yellow2]Mercenary, [purple]Voider',
@@ -642,6 +647,11 @@ function init()
     ['vulcanist'] = function(lvl) return '[fg]creates a volcano that explodes the nearby area [yellow]4[fg] times, dealing [yellow]' .. get_character_stat('vulcanist', lvl, 'dmg') .. ' AoE [fg]damage' end,
     ['warden'] = function(lvl) return '[fg]creates a force field around a random unit that prevents enemies from entering' end,
     ['psychic'] = function(lvl) return '[fg]creates a small area that deals [yellow]' .. get_character_stat('psychic', lvl, 'dmg') .. ' AoE[fg] damage' end,
+    ['orbiter'] = function(lvl)
+      if lvl == 1 then return '[fg]shoots a projectile that deals [yellow]' .. get_character_stat('orbiter', lvl, 'dmg') .. '[fg] damage and has [yellow]1[fg] psyker orb' end
+      if lvl == 2 then return '[fg]shoots a projectile, has [yellow]2[fg] psyker orbs, and gains extra max HP' end
+      return '[fg]shoots a projectile and makes all psyker orbs orbit around the snake'
+    end,
     ['miner'] = function(lvl) return '[fg]picking up gold releases [yellow]4[fg] homing projectiles that each deal [yellow]' .. get_character_stat('miner', lvl, 'dmg') .. ' [fg]damage' end,
     ['merchant'] = function(lvl) return '[fg]gain [yellow]+1[fg] interest for every [yellow]10[fg] gold, up to a max of [yellow]+10[fg] from the merchant' end,
     ['usurer'] = function(lvl) return '[fg]curses [yellow]3[fg] nearby enemies indefinitely with debt, dealing [yellow]' .. get_character_stat('usurer', lvl, 'dmg') .. '[fg] damage per second' end,
@@ -702,6 +712,7 @@ function init()
     ['vulcanist'] = '[red]Lava Burst',
     ['warden'] = '[yellow]Magnetic Field',
     ['psychic'] = '[fg]Mental Strike',
+    ['orbiter'] = '[fg]Collective Orbit',
     ['miner'] = '[yellow2]Golden Bolts',
     ['merchant'] = '[yellow2]Item Shop',
     ['usurer'] = '[purple]Bankruptcy',
@@ -762,6 +773,7 @@ function init()
     ['vulcanist'] = '[light_bg]Lava Burst',
     ['warden'] = '[light_bg]Magnetic Field',
     ['psychic'] = '[light_bg]Mental Strike',
+    ['orbiter'] = '[light_bg]Collective Orbit',
     ['miner'] = '[light_bg]Golden Bolts',
     ['merchant'] = '[light_bg]Item Shop',
     ['usurer'] = '[light_bg]Bankruptcy',
@@ -822,6 +834,7 @@ function init()
     ['vulcanist'] = function() return '[fg]the number and speed of explosions is [yellow]doubled[fg]' end,
     ['warden'] = function() return '[fg]creates the force field around [yellow]2[fg] units' end,
     ['psychic'] = function() return '[fg]the attack can happen from any distance and repeats once' end,
+    ['orbiter'] = function() return '[fg]all psyker orbs orbit around the snake instead of around their individual psyker units' end,
     ['miner'] = function() return '[fg]release [yellow]8[fg] homing projectiles instead and they pierce twice' end,
     ['merchant'] = function() return '[fg]your first item reroll is always free' end,
     ['usurer'] = function() return '[fg]if the same enemy is cursed [yellow]3[fg] times it takes [yellow]' .. 10*get_character_stat('usurer', 3, 'dmg') .. '[fg] damage' end,
@@ -882,6 +895,7 @@ function init()
     ['vulcanist'] = function() return '[light_bg]the number and speed of explosions is doubled' end,
     ['warden'] = function() return '[light_bg]creates the force field around 2 units' end,
     ['psychic'] = function() return '[light_bg]the attack can happen from any distance and repeats once' end,
+    ['orbiter'] = function() return '[light_bg]all psyker orbs orbit around the snake instead of around their individual psyker units' end,
     ['miner'] = function() return '[light_bg]release 8 homing projectiles instead and they pierce twice' end,
     ['merchant'] = function() return '[light_bg]your first item reroll is always free' end,
     ['usurer'] = function() return '[light_bg]if the same enemy is cursed 3 times it takes ' .. 10*get_character_stat('usurer', 3, 'dmg') .. ' damage' end,
@@ -942,6 +956,7 @@ function init()
     ['vulcanist'] = function(lvl) return get_character_stat_string('vulcanist', lvl) end,
     ['warden'] = function(lvl) return get_character_stat_string('warden', lvl) end,
     ['psychic'] = function(lvl) return get_character_stat_string('psychic', lvl) end,
+    ['orbiter'] = function(lvl) return get_character_stat_string('orbiter', lvl) end,
     ['miner'] = function(lvl) return get_character_stat_string('miner', lvl) end,
     ['merchant'] = function(lvl) return get_character_stat_string('merchant', lvl) end,
     ['usurer'] = function(lvl) return get_character_stat_string('usurer', lvl) end,
@@ -1011,9 +1026,9 @@ function init()
 
   tier_to_characters = {
     [1] = {'vagrant', 'swordsman', 'magician', 'archer', 'scout', 'cleric', 'arcanist', 'merchant'},
-    [2] = {'wizard', 'bomber', 'sage', 'squire', 'dual_gunner', 'sentry', 'chronomancer', 'barbarian', 'cryomancer', 'beastmaster', 'jester', 'carver', 'psychic', 'witch', 'silencer', 'outlaw', 'miner'},
-    [3] = {'elementor', 'stormweaver', 'spellblade', 'psykeeper', 'engineer', 'juggernaut', 'pyromancer', 'host', 'assassin', 'bane', 'barrager', 'infestor', 'flagellant', 'artificer', 'usurer', 'gambler'},
-    [4] = {'priest', 'highlander', 'psykino', 'fairy', 'blade', 'plague_doctor', 'cannoneer', 'vulcanist', 'warden', 'corruptor', 'thief'},
+    [2] = {'wizard', 'bomber', 'sage', 'squire', 'dual_gunner', 'sentry', 'chronomancer', 'barbarian', 'cryomancer', 'beastmaster', 'jester', 'carver', 'psychic', 'orbiter', 'witch', 'silencer', 'outlaw', 'miner', 'illusionist'},
+    [3] = {'elementor', 'stormweaver', 'spellblade', 'psykeeper', 'engineer', 'juggernaut', 'pyromancer', 'host', 'assassin', 'bane', 'barrager', 'infestor', 'flagellant', 'artificer', 'usurer', 'gambler', 'saboteur', 'hunter'},
+    [4] = {'priest', 'highlander', 'psykino', 'fairy', 'blade', 'plague_doctor', 'cannoneer', 'vulcanist', 'warden', 'corruptor', 'thief', 'lich', 'launcher'},
   }
 
   non_attacking_characters = {'cleric', 'stormweaver', 'squire', 'chronomancer', 'sage', 'psykeeper', 'bane', 'carver', 'fairy', 'priest', 'flagellant', 'merchant', 'miner'}
@@ -1029,7 +1044,7 @@ function init()
     ['outlaw'] = 2,
     ['blade'] = 4,
     ['elementor'] = 3,
-    -- ['saboteur'] = 2,
+    ['saboteur'] = 3,
     ['bomber'] = 2,
     ['wizard'] = 2,
     ['stormweaver'] = 3,
@@ -1037,7 +1052,7 @@ function init()
     ['squire'] = 2,
     ['cannoneer'] = 4,
     ['dual_gunner'] = 2,
-    -- ['hunter'] = 2,
+    ['hunter'] = 3,
     ['sentry'] = 2,
     ['chronomancer'] = 2,
     ['spellblade'] = 3,
@@ -1046,12 +1061,12 @@ function init()
     ['plague_doctor'] = 4,
     ['barbarian'] = 2,
     ['juggernaut'] = 3,
-    -- ['lich'] = 4,
+    ['lich'] = 4,
     ['cryomancer'] = 2,
     ['pyromancer'] = 3,
     ['corruptor'] = 4,
     ['beastmaster'] = 2,
-    -- ['launcher'] = 2,
+    ['launcher'] = 4,
     ['jester'] = 2,
     ['assassin'] = 3,
     ['host'] = 3,
@@ -1065,13 +1080,14 @@ function init()
     ['infestor'] = 3,
     ['flagellant'] = 3,
     ['arcanist'] = 1,
-    -- ['illusionist'] = 3,
+    ['illusionist'] = 2,
     ['artificer'] = 3,
     ['witch'] = 2,
     ['silencer'] = 2,
     ['vulcanist'] = 4,
     ['warden'] = 4,
     ['psychic'] = 2,
+    ['orbiter'] = 2,
     ['miner'] = 2,
     ['merchant'] = 1,
     ['usurer'] = 3,
@@ -1081,7 +1097,7 @@ function init()
 
   launches_projectiles = function(character)
     local classes = {'vagrant', 'archer', 'scout', 'outlaw', 'blade', 'wizard', 'cannoneer', 'dual_gunner', 'hunter', 'spellblade', 'engineer', 'corruptor', 'beastmaster', 'jester', 'assassin', 'barrager', 
-      'arcanist', 'illusionist', 'artificer', 'miner', 'thief', 'sentry'}
+      'arcanist', 'illusionist', 'artificer', 'miner', 'thief', 'sentry', 'orbiter'}
     return table.any(classes, function(v) return v == character end)
   end
 
@@ -1702,6 +1718,9 @@ function init()
   current_new_game_plus = state.current_new_game_plus or new_game_plus
   if not state.current_new_game_plus then state.current_new_game_plus = current_new_game_plus end
   max_units = math.clamp(7 + current_new_game_plus, 7, 12)
+  debug_money = true
+  debug_shop_units = {'orbiter', 'illusionist', 'lich', 'saboteur', 'hunter', 'launcher'}
+  debug_shop_index = 1
 
   main_song_instance = _G[random:table{'song1', 'song2', 'song3', 'song4', 'song5'}]:play{volume = 0.5}
   main = Main()

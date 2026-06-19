@@ -205,6 +205,30 @@ function Player:init(args)
       end
     end, nil, nil, 'shoot')
 
+  elseif self.character == 'illusionist' then
+    self.sorcerer_count = 0
+    self.attack_sensor = Circle(self.x, self.y, 128)
+    self.t:cooldown(4, function() local enemies = self:get_objects_in_shape(self.attack_sensor, main.current.enemies); return enemies and #enemies > 0 end, function()
+      local cast = function()
+        local closest_enemy = self:get_closest_object_in_shape(self.attack_sensor, main.current.enemies)
+        if closest_enemy then
+          illusion1:play{pitch = random:float(0.95, 1.05), volume = 0.35}
+          self:shoot(self:angle_to_object(closest_enemy), {v = 220})
+        end
+      end
+      cast()
+      if main.current.sorcerer_level > 0 then
+        self.sorcerer_count = self.sorcerer_count + 1
+        if self.sorcerer_count >= ((main.current.sorcerer_level == 3 and 2) or (main.current.sorcerer_level == 2 and 3) or (main.current.sorcerer_level == 1 and 4)) then
+          self:sorcerer_repeat()
+          self.sorcerer_count = 0
+          self.t:after(0.25, function()
+            cast()
+          end)
+        end
+      end
+    end, nil, nil, 'shoot')
+
   elseif self.character == 'artificer' then
     self.sorcerer_count = 0
     self.attack_sensor = Circle(self.x, self.y, 96)
@@ -288,6 +312,15 @@ function Player:init(args)
         end
       end
     end, nil, nil, 'attack')
+
+  elseif self.character == 'orbiter' then
+    self.attack_sensor = Circle(self.x, self.y, 128)
+    self.t:cooldown(2.5, function() local enemies = self:get_objects_in_shape(self.attack_sensor, main.current.enemies); return enemies and #enemies > 0 end, function()
+      local closest_enemy = self:get_closest_object_in_shape(self.attack_sensor, main.current.enemies)
+      if closest_enemy then
+        self:shoot(self:angle_to_object(closest_enemy))
+      end
+    end, nil, nil, 'shoot')
 
   elseif self.character == 'saboteur' then
     self.t:every(8, function()
@@ -1090,9 +1123,13 @@ function Player:init(args)
   if self.leader then
     self.t:after(1, function()
       local units = self:get_all_units()
+      local snake_orbit = table.any(units, function(unit) return unit.character == 'orbiter' and unit.level == 3 end)
+      local spawn_psyker_orb = function(unit)
+        Projectile{group = main.current.main, x = unit.x + 24*math.cos(unit.r), y = unit.y + 24*math.sin(unit.r), color = fg[0], v = 200, dmg = unit.dmg, character = 'psyker', parent = unit, snake_orbit = snake_orbit}
+      end
       for _, unit in ipairs(units) do
         if table.any(unit.classes, function(v) return v == 'psyker' end) then
-          Projectile{group = main.current.main, x = unit.x + 24*math.cos(unit.r), y = unit.y + 24*math.sin(unit.r), color = fg[0], v = 200, dmg = unit.dmg, character = 'psyker', parent = unit}
+          spawn_psyker_orb(unit)
         end
       end
 
@@ -1103,15 +1140,21 @@ function Player:init(args)
         end
       end
 
+      for _, unit in ipairs(units) do
+        if unit.character == 'orbiter' and unit.level >= 2 then
+          spawn_psyker_orb(unit)
+        end
+      end
+
       for i = 1, ((main.current.psyker_level == 2 and 4) or (main.current.psyker_level == 1 and 2) or (main.current.psyker_level == 0 and 0) or 0) do
         local unit = random:table(#psykers > 0 and psykers or units)
-        Projectile{group = main.current.main, x = unit.x + 24*math.cos(unit.r), y = unit.y + 24*math.sin(unit.r), color = fg[0], v = 200, dmg = unit.dmg, character = 'psyker', parent = unit}
+        spawn_psyker_orb(unit)
       end
 
       if self.psyker_orbs then
         for i = 1, ((self.psyker_orbs == 1 and 1) or (self.psyker_orbs == 2 and 2) or (self.psyker_orbs == 3 and 4) or 0) do
           local unit = random:table(#psykers > 0 and psykers or units)
-          Projectile{group = main.current.main, x = unit.x + 24*math.cos(unit.r), y = unit.y + 24*math.sin(unit.r), color = fg[0], v = 200, dmg = unit.dmg, character = 'psyker', parent = unit}
+          spawn_psyker_orb(unit)
         end
       end
     end)
@@ -1120,7 +1163,9 @@ function Player:init(args)
   if self.leader and self.psycholeak then
     main.current.t:every(10, function()
       local unit = main.current.player
-      Projectile{group = main.current.main, x = unit.x + 24*math.cos(unit.r), y = unit.y + 24*math.sin(unit.r), color = fg[0], v = 200, dmg = unit.dmg, character = 'psyker', parent = unit}
+      local units = unit:get_all_units()
+      local snake_orbit = table.any(units, function(unit) return unit.character == 'orbiter' and unit.level == 3 end)
+      Projectile{group = main.current.main, x = unit.x + 24*math.cos(unit.r), y = unit.y + 24*math.sin(unit.r), color = fg[0], v = 200, dmg = unit.dmg, character = 'psyker', parent = unit, snake_orbit = snake_orbit}
     end)
   end
 
@@ -1911,12 +1956,14 @@ function Player:shoot(r, mods)
 
   if self.character == 'vagrant' or self.character == 'artificer' then
     shoot1:play{pitch = random:float(0.95, 1.05), volume = 0.2}
+  elseif self.character == 'orbiter' then
+    shoot1:play{pitch = random:float(1.1, 1.25), volume = 0.2}
   elseif self.character == 'dual_gunner' then
     dual_gunner1:play{pitch = random:float(0.95, 1.05), volume = 0.3}
     dual_gunner2:play{pitch = random:float(0.95, 1.05), volume = 0.3}
   elseif self.character == 'archer' or self.character == 'hunter' or self.character == 'barrager' or self.character == 'corruptor' then
     archer1:play{pitch = random:float(0.95, 1.05), volume = 0.35}
-  elseif self.character == 'wizard' or self.character == 'lich' or self.character == 'arcanist' then
+  elseif self.character == 'wizard' or self.character == 'lich' or self.character == 'arcanist' or self.character == 'illusionist' then
     wizard1:play{pitch = random:float(0.95, 1.05), volume = 0.15}
   elseif self.character == 'scout' or self.character == 'outlaw' or self.character == 'blade' or self.character == 'spellblade' or self.character == 'jester' or self.character == 'assassin' or self.character == 'beastmaster' or
          self.character == 'thief' then
@@ -2130,9 +2177,35 @@ function Projectile:update(dt)
   self:update_game_object(dt)
 
   if self.character == 'psyker' then
-    if self.parent.dead then self.dead = true; self.parent = nil; return end
-    self:set_position(self.parent.x + self.orbit_distance*math.cos(self.orbit_speed*main.current.t.time + self.orbit_offset),
-      self.parent.y + self.orbit_distance*math.sin(self.orbit_speed*main.current.t.time + self.orbit_offset))
+    local orbit_x, orbit_y
+    if self.snake_orbit then
+      local snake = main.current and main.current.player
+      local units = snake and snake:get_all_units() or {}
+      local n = 0
+      orbit_x, orbit_y = 0, 0
+      for _, unit in ipairs(units) do
+        if not unit.dead then
+          orbit_x = orbit_x + unit.x
+          orbit_y = orbit_y + unit.y
+          n = n + 1
+        end
+      end
+      if n > 0 then
+        orbit_x = orbit_x/n
+        orbit_y = orbit_y/n
+      elseif self.parent and not self.parent.dead then
+        orbit_x, orbit_y = self.parent.x, self.parent.y
+      else
+        self.dead = true
+        self.parent = nil
+        return
+      end
+    else
+      if self.parent.dead then self.dead = true; self.parent = nil; return end
+      orbit_x, orbit_y = self.parent.x, self.parent.y
+    end
+    self:set_position(orbit_x + self.orbit_distance*math.cos(self.orbit_speed*main.current.t.time + self.orbit_offset),
+      orbit_y + self.orbit_distance*math.sin(self.orbit_speed*main.current.t.time + self.orbit_offset))
     local dx, dy = self.x - (self.previous_x or 0), self.y - (self.previous_y or 0)
     self.r = Vector(dx, dy):angle()
     self:set_angle(self.r)
@@ -2227,6 +2300,14 @@ function Projectile:die(x, y, r, n)
   HitCircle{group = main.current.effects, x = x, y = y}:scale_down()
   self.dead = true
 
+  if self.character == 'illusionist' and self.level == 3 and (self.illusion_generation or 0) > 0 and not self.illusion_death_release then
+    for i = 1, 12 do
+      local r = (i-1)*math.pi/6
+      Projectile{group = main.current.main, x = self.x, y = self.y, r = r, v = 200, color = self.color, dmg = 0.5*self.dmg, character = 'illusionist',
+        parent = self.parent, level = self.level, illusion_generation = 10, illusion_death_release = true}
+    end
+  end
+
   if self.character == 'wizard' then
     Area{group = main.current.effects, x = self.x, y = self.y, r = self.r, w = self.parent.area_size_m*24, color = self.color, dmg = self.parent.area_dmg_m*self.dmg, character = self.character, level = self.level, parent = self,
       void_rift = self.parent.void_rift, echo_barrage = self.parent.echo_barrage}
@@ -2287,7 +2368,7 @@ function Projectile:on_collision_enter(other, contact)
         self.r = r
         self.ricochet = self.ricochet - 1
       end
-    elseif self.character == 'wizard' or self.character == 'lich' or self.character == 'arcanist' or self.character == 'arcanist_projectile' or self.character == 'witch' then
+    elseif self.character == 'wizard' or self.character == 'lich' or self.character == 'arcanist' or self.character == 'arcanist_projectile' or self.character == 'witch' or self.character == 'illusionist' then
       self:die(x, y, r, random:int(2, 3))
       magic_area1:play{pitch = random:float(0.95, 1.05), volume = 0.075}
     elseif self.character == 'cannoneer' then
@@ -2344,12 +2425,12 @@ function Projectile:on_trigger_enter(other, contact)
 
     if self.character == 'archer' or self.character == 'scout' or self.character == 'outlaw' or self.character == 'blade' or self.character == 'hunter' or self.character == 'spellblade' or self.character == 'engineer' or
     self.character == 'jester' or self.character == 'assassin' or self.character == 'barrager' or self.character == 'beastmaster' or self.character == 'witch' or self.character == 'miner' or self.character == 'thief' or 
-    self.character == 'psyker' or self.character == 'sentry' then
+    self.character == 'psyker' or self.character == 'sentry' or self.character == 'orbiter' then
       hit2:play{pitch = random:float(0.95, 1.05), volume = 0.35}
       if self.character == 'spellblade' or self.character == 'psyker' then
         magic_area1:play{pitch = random:float(0.95, 1.05), volume = 0.15}
       end
-    elseif self.character == 'wizard' or self.character == 'lich' or self.character == 'arcanist' then
+    elseif self.character == 'wizard' or self.character == 'lich' or self.character == 'arcanist' or self.character == 'illusionist' then
       magic_area1:play{pitch = random:float(0.95, 1.05), volume = 0.15}
     elseif self.character == 'arcanist_projectile' then
       magic_area1:play{pitch = random:float(0.95, 1.05), volume = 0.075}
@@ -2377,6 +2458,35 @@ function Projectile:on_trigger_enter(other, contact)
           SpawnEffect{group = main.current.effects, x = self.parent.x, y = self.parent.y, color = orange[0], action = function(x, y)
             Pet{group = main.current.main, x = x, y = y, r = self.parent:angle_to_object(other), v = 150, parent = self.parent, conjurer_buff_m = self.conjurer_buff_m or 1}
           end}
+        end
+      end)
+    end
+
+    if self.character == 'illusionist' and (self.illusion_generation or 0) < 1 and self.parent and not self.parent.dead then
+      local x, y, r = self.x, self.y, self.r
+      local color, dmg = self.color, self.dmg
+      local parent, level = self.parent, self.level
+      local generation = (self.illusion_generation or 0) + 1
+      local other_id = other.id
+      trigger:after(0.01, function()
+        if not main.current or not main.current.main or not main.current.main.world or not parent or parent.dead then return end
+        illusion1:play{pitch = random:float(0.95, 1.05), volume = 0.25}
+        local copies = level == 3 and 4 or 2
+        local targets = table.shuffle(main.current.main:get_objects_in_shape(Circle(x, y, 128), main.current.enemies) or {})
+        local spawned = 0
+        for _, target in ipairs(targets) do
+          if target.id ~= other_id and not target.dead then
+            spawned = spawned + 1
+            local copy_r = math.angle(x, y, target.x, target.y)
+            Projectile{group = main.current.main, x = x, y = y, r = copy_r, v = 220, color = color, dmg = dmg, character = 'illusionist',
+              parent = parent, level = level, illusion_generation = generation}
+            if spawned >= copies then break end
+          end
+        end
+        for i = spawned + 1, copies do
+          local copy_r = r + (i - 1)*2*math.pi/copies
+          Projectile{group = main.current.main, x = x, y = y, r = copy_r, v = 220, color = color, dmg = dmg, character = 'illusionist',
+            parent = parent, level = level, illusion_generation = generation}
         end
       end)
     end
