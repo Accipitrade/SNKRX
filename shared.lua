@@ -104,6 +104,18 @@ Star:implement(Physics)
 function Star:init(args)
   self:init_game_object(args)
   self.sx, self.sy = 0.35, 0.35
+  self.s = random:float(0.9, 1.05)
+  self.shape_type = random:table{
+    'star', 'star', 'star', 'star', 'star', 'star', 'star', 'star',
+    'star', 'star', 'star', 'star',
+    'circle', 'circle',
+    'square', 'square',
+    'triangle', 'triangle',
+    'hot_dog',
+    'donut',
+    'winky_face',
+    'rubber_ducky',
+  }
   self.vr = 0
   self.dvr = random:float(0, math.pi/4)
   self.v = random:float(30, 42)
@@ -120,7 +132,54 @@ end
 
 
 function Star:draw()
-  star:draw(self.x, self.y, self.vr, self.sx, self.sy, 0, 0, bg[1])
+  if self.shape_type == 'star' then
+    star:draw(self.x, self.y, self.vr, self.sx, self.sy, 0, 0, bg[1])
+  elseif self.shape_type == 'circle' then
+    graphics.push(self.x, self.y, self.vr, self.s, self.s)
+      graphics.circle(self.x, self.y, 10.5, bg[1])
+    graphics.pop()
+  elseif self.shape_type == 'square' then
+    graphics.push(self.x, self.y, self.vr, self.s, self.s)
+      graphics.rectangle(self.x, self.y, 18, 18, 2, 2, bg[1])
+    graphics.pop()
+  elseif self.shape_type == 'triangle' then
+    graphics.push(self.x, self.y, self.vr - math.pi/2, self.s, self.s)
+      graphics.triangle_equilateral(self.x, self.y, 21, bg[1])
+    graphics.pop()
+  elseif self.shape_type == 'hot_dog' then
+    graphics.push(self.x, self.y, self.vr, self.s, self.s)
+      graphics.rectangle(self.x, self.y, 24, 11, 5, 5, yellow2[0])
+      graphics.rectangle(self.x, self.y, 19, 5, 3, 3, orange[0])
+      graphics.line(self.x - 7, self.y, self.x - 3, self.y - 1.5, red[0], 2)
+      graphics.line(self.x - 2, self.y - 1.5, self.x + 2, self.y + 1.5, red[0], 2)
+      graphics.line(self.x + 3, self.y + 1.5, self.x + 7, self.y, red[0], 2)
+    graphics.pop()
+  elseif self.shape_type == 'donut' then
+    graphics.push(self.x, self.y, self.vr, self.s, self.s)
+      graphics.circle(self.x, self.y, 10.5, yellow2[0])
+      graphics.circle(self.x, self.y, 4.5, bg[0])
+      graphics.rectangle(self.x - 4, self.y - 5, 2, 2, nil, nil, blue[0])
+      graphics.rectangle(self.x + 5, self.y - 1, 2, 2, nil, nil, purple[0])
+      graphics.rectangle(self.x - 1, self.y + 5, 2, 2, nil, nil, red[0])
+      graphics.rectangle(self.x + 2.5, self.y - 6, 2, 2, nil, nil, green[0])
+      graphics.rectangle(self.x - 6, self.y + 1.5, 2, 2, nil, nil, yellow[0])
+      graphics.rectangle(self.x + 4, self.y + 4.5, 2, 2, nil, nil, blue[0])
+    graphics.pop()
+  elseif self.shape_type == 'winky_face' then
+    graphics.push(self.x, self.y, 0, self.s, self.s)
+      graphics.circle(self.x, self.y, 10.5, yellow[0], 2)
+      graphics.circle(self.x - 3.8, self.y - 2.5, 1.4, yellow[0])
+      graphics.line(self.x + 2.5, self.y - 2.5, self.x + 7, self.y - 4, yellow[0], 2)
+      graphics.arc('open', self.x, self.y + 1.5, 6, 0.15*math.pi, 0.85*math.pi, yellow[0], 2)
+    graphics.pop()
+  elseif self.shape_type == 'rubber_ducky' then
+    graphics.push(self.x, self.y, self.vr*0.4, self.s, self.s)
+      graphics.circle(self.x - 3.5, self.y + 3, 7.5, yellow[0])
+      graphics.circle(self.x + 5, self.y - 3.5, 5, yellow[0])
+      graphics.triangle(self.x + 10, self.y - 3.5, 4.5, 5, orange[0])
+      graphics.circle(self.x + 6, self.y - 5, 0.9, bg[0])
+    graphics.pop()
+  end
 end
 
 
