@@ -196,6 +196,10 @@ end
 
 
 function Unit:show_hp(n)
+  if self:is(Player) and state.unit_health_as_fill ~= false then
+    self.hp_bar.hidden = true
+    return
+  end
   self.hp_bar.hidden = false
   self.hp_bar.color = red[0]
   self.t:after(n or 2, function() self.hp_bar.hidden = true end, 'hp_bar')
@@ -437,6 +441,7 @@ end
 function HPBar:draw()
   if self.hidden then return end
   local p = self.parent
+  if p:is(Player) and state.unit_health_as_fill ~= false then return end
   graphics.push(p.x, p.y, 0, p.hfx.hit.x, p.hfx.hit.x)
     graphics.line(p.x - 0.5*p.shape.w, p.y - p.shape.h, p.x + 0.5*p.shape.w, p.y - p.shape.h, bg[-3], 2)
     local n = math.remap(p.hp, 0, p.max_hp, 0, 1)

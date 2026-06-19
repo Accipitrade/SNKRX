@@ -1429,12 +1429,10 @@ end
 function Player:draw()
   graphics.push(self.x, self.y, self.r, self.hfx.hit.x*self.hfx.shoot.x, self.hfx.hit.x*self.hfx.shoot.x)
   if self.visual_shape == 'rectangle' then
-    if self.magician_invulnerable then
-      graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 3, 3, blue_transparent)
-    elseif self.undead then
-      graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 3, 3, self.color, 1)
+    if state.unit_health_as_fill == false then
+      self:draw_default_body()
     else
-      graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 3, 3, (self.hfx.hit.f or self.hfx.shoot.f) and fg[0] or self.color)
+      self:draw_health_body()
     end
 
     if self.leader and state.arrow_snake then
@@ -1456,6 +1454,36 @@ function Player:draw()
     end
   end
   graphics.pop()
+end
+
+
+function Player:draw_default_body()
+  if self.magician_invulnerable then
+    graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 3, 3, blue_transparent)
+  elseif self.undead then
+    graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 3, 3, self.color, 1)
+  else
+    graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 3, 3, (self.hfx.hit.f or self.hfx.shoot.f) and fg[0] or self.color)
+  end
+end
+
+
+function Player:draw_health_body()
+  local body_color = (self.hfx.hit.f or self.hfx.shoot.f) and fg[0] or self.color
+  local outline_color = self.magician_invulnerable and blue[0] or body_color
+  local hp_ratio = math.clamp((self.hp or 0)/(self.max_hp or 1), 0, 1)
+  local outline_w, outline_h = math.max(self.shape.w - 1, 0), math.max(self.shape.h - 1, 0)
+  local inner_w, inner_h = math.max(self.shape.w - 3, 0), math.max(self.shape.h - 3, 0)
+  local fill_h = inner_h*hp_ratio
+
+  if self.magician_invulnerable then
+    graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 3, 3, blue_transparent)
+  end
+
+  if fill_h > 0 then
+    graphics.rectangle(self.x, self.y + inner_h/2 - fill_h/2, inner_w, fill_h, 2, 2, body_color)
+  end
+  graphics.rectangle(self.x, self.y, outline_w, outline_h, 3, 3, outline_color, 1)
 end
 
 

@@ -1878,6 +1878,7 @@ function open_options(self)
         if self.screen_movement_button then self.screen_movement_button.dead = true; self.screen_movement_button = nil end
         if self.cooldown_snake_button then self.cooldown_snake_button.dead = true; self.cooldown_snake_button = nil end
         if self.arrow_snake_button then self.arrow_snake_button.dead = true; self.arrow_snake_button = nil end
+        if self.unit_health_fill_button then self.unit_health_fill_button.dead = true; self.unit_health_fill_button = nil end
         if self.ng_plus_plus_button then self.ng_plus_plus_button.dead = true; self.ng_plus_plus_button = nil end
         if self.ng_plus_minus_button then self.ng_plus_minus_button.dead = true; self.ng_plus_minus_button = nil end
         if self.main_menu_button then self.main_menu_button.dead = true; self.main_menu_button = nil end
@@ -2056,6 +2057,13 @@ function open_options(self)
       b:set_text('screen movement: ' .. tostring(state.no_screen_movement and 'no' or 'yes'))
     end}
 
+    self.unit_health_fill_button = Button{group = self.ui, x = gw/2 + 118, y = gh - 25, w = 175, force_update = true, button_text = '[bg10]unit health as fill: ' .. tostring(state.unit_health_as_fill == false and 'no' or 'yes'), 
+    fg_color = 'bg10', bg_color = 'bg', action = function(b)
+      ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+      state.unit_health_as_fill = state.unit_health_as_fill == false
+      b:set_text('unit health as fill: ' .. tostring(state.unit_health_as_fill == false and 'no' or 'yes'))
+    end}
+
     if self:is(MainMenu) then
       self.ng_plus_minus_button = Button{group = self.ui, x = gw/2 - 58, y = gh - 50, force_update = true, button_text = 'NG+ down', fg_color = 'bg10', bg_color = 'bg', action = function(b)
         ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
@@ -2124,6 +2132,7 @@ function close_options(self)
     if self.screen_movement_button then self.screen_movement_button.dead = true; self.screen_movement_button = nil end
     if self.cooldown_snake_button then self.cooldown_snake_button.dead = true; self.cooldown_snake_button = nil end
     if self.arrow_snake_button then self.arrow_snake_button.dead = true; self.arrow_snake_button = nil end
+    if self.unit_health_fill_button then self.unit_health_fill_button.dead = true; self.unit_health_fill_button = nil end
     if self.quit_button then self.quit_button.dead = true; self.quit_button = nil end
     if self.ng_plus_plus_button then self.ng_plus_plus_button.dead = true; self.ng_plus_plus_button = nil end
     if self.ng_plus_minus_button then self.ng_plus_minus_button.dead = true; self.ng_plus_minus_button = nil end
