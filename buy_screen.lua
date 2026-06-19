@@ -8,13 +8,12 @@ end
 
 
 function BuyScreen:on_exit()
-  self.main:destroy()
-  self.effects:destroy()
-  self.ui:destroy()
+  self:destroy_layers()
   self.t:destroy()
   self.main = nil
   self.effects = nil
   self.ui = nil
+  self.tutorial = nil
   self.shop_text = nil
   self.party_text = nil
   self.sets_text = nil
@@ -53,10 +52,10 @@ function BuyScreen:on_enter(from, level, loop, units, passives, shop_level, shop
   steam.friends.setRichPresence('steam_display', '#StatusFull')
   steam.friends.setRichPresence('text', 'Shop - Level ' .. self.level)
 
-  self.main = Group()
-  self.effects = Group()
-  self.ui = Group()
-  self.tutorial = Group()
+  self.main = self:add_layer('main', Group())
+  self.effects = self:add_layer('effects', Group())
+  self.ui = self:add_layer('ui', Group())
+  self.tutorial = self:add_layer('tutorial', Group())
 
   self.locked = locked_state and locked_state.locked
   LockButton{group = self.main, x = 205, y = 18, parent = self}
@@ -187,9 +186,7 @@ function BuyScreen:update(dt)
   self:update_game_object(dt*slow_amount)
 
   if not self.in_tutorial and not self.paused then
-    self.main:update(dt*slow_amount)
-    self.effects:update(dt*slow_amount)
-    self.ui:update(dt*slow_amount)
+    self:update_layers(dt*slow_amount, {'main', 'effects', 'ui'})
     if self.shop_text then self.shop_text:update(dt) end
     if self.sets_text then self.sets_text:update(dt) end
     if self.party_text then self.party_text:update(dt) end
@@ -197,8 +194,7 @@ function BuyScreen:update(dt)
     if self.ng_text then self.ng_text:update(dt) end
     if self.level_text then self.level_text:update(dt) end
   else
-    self.ui:update(dt*slow_amount)
-    self.tutorial:update(dt*slow_amount)
+    self:update_layers(dt*slow_amount, {'ui', 'tutorial'})
   end
 
   if self.in_tutorial and input.escape.pressed then
@@ -234,8 +230,7 @@ end
 
 
 function BuyScreen:draw()
-  self.main:draw()
-  self.effects:draw()
+  self:draw_layers{'main', 'effects'}
   if self.items_text then self.items_text:draw(32, 145) end
   if self.level_text then self.level_text:draw(265, gh - 20) end
 
@@ -257,14 +252,14 @@ function BuyScreen:draw()
   if current_new_game_plus > 0 then self.ng_text:draw(265, gh - 40) end
 
   if self.paused then graphics.rectangle(gw/2, gh/2, 2*gw, 2*gh, nil, nil, modal_transparent) end
-  self.ui:draw()
+  self:draw_layers{'ui'}
 
   if self.in_tutorial then
     graphics.rectangle(gw/2, gh/2, 2*gw, 2*gh, nil, nil, modal_transparent_2)
     arrow:draw(gw/2 + 93, gh/2 - 30, 0, 0.4, 0.35)
     arrow:draw(gw/2 + 93, gh/2 - 10, 0, 0.4, 0.35)
   end
-  self.tutorial:draw()
+  self:draw_layers{'tutorial'}
 end
 
 

@@ -54,6 +54,48 @@ function State:exit(to, ...)
 end
 
 
+function State:add_layer(tag, layer)
+  layer = layer or Group()
+  EngineNode.append(self, layer, tag)
+  return layer
+end
+
+
+function State:each_layer(tags, fn)
+  tags = tags or self.children
+  for _, tag in ipairs(tags) do
+    local layer = type(tag) == 'string' and EngineNode.get_child(self, tag) or tag
+    if layer then fn(layer, tag) end
+  end
+end
+
+
+function State:update_layers(dt, tags, dt_by_tag)
+  self:each_layer(tags, function(layer, tag)
+    if layer.update then layer:update((dt_by_tag and dt_by_tag[tag]) or dt) end
+  end)
+end
+
+
+function State:draw_layers(tags)
+  self:each_layer(tags, function(layer)
+    if layer.draw then layer:draw() end
+  end)
+end
+
+
+function State:destroy_layers(tags)
+  if not tags then
+    EngineNode.destroy(self)
+    return
+  end
+
+  self:each_layer(tags, function(layer)
+    if layer.destroy then layer:destroy() end
+  end)
+end
+
+
 
 -- The main state. This is a global state that is always active and contains all other states.
 Main = EngineNode:extend()
@@ -61,12 +103,12 @@ Main:implement(State)
 function Main:init(name)
   self:init_state(name)
   self.states = {}
-  self.transitions = Group():no_camera()
+  self.transitions = self:add_layer('transitions', Group():no_camera())
 end
 
 
 function Main:update(dt)
-  for _, state in pairs(self.states) do
+  for _, state in ipairs(self.children) do
     if state.active or state.persistent_update then
       state:update(dt)
     end
@@ -76,7 +118,7 @@ end
 
 
 function Main:draw()
-  for _, state in pairs(self.states) do
+  for _, state in ipairs(self.children) do
     if state.active or state.persistent_draw then
       state:draw()
     end

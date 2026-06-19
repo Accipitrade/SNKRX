@@ -14,12 +14,12 @@ function MainMenu:on_enter(from)
   steam.friends.setRichPresence('steam_display', '#StatusFull')
   steam.friends.setRichPresence('text', 'Main Menu')
 
-  self.floor = Group()
-  self.main = Group():set_as_physics_world(32, 0, 0, {'player', 'enemy', 'projectile', 'enemy_projectile', 'force_field', 'ghost'})
-  self.post_main = Group()
-  self.effects = Group()
-  self.main_ui = Group():no_camera()
-  self.ui = Group():no_camera()
+  self.floor = self:add_layer('floor', Group())
+  self.main = self:add_layer('main', Group():set_as_physics_world(32, 0, 0, {'player', 'enemy', 'projectile', 'enemy_projectile', 'force_field', 'ghost'}))
+  self.post_main = self:add_layer('post_main', Group())
+  self.effects = self:add_layer('effects', Group())
+  self.main_ui = self:add_layer('main_ui', Group():no_camera())
+  self.ui = self:add_layer('ui', Group():no_camera())
   self.main:disable_collision_between('player', 'player')
   self.main:disable_collision_between('player', 'projectile')
   self.main:disable_collision_between('player', 'enemy_projectile')
@@ -140,12 +140,7 @@ end
 
 
 function MainMenu:on_exit()
-  self.floor:destroy()
-  self.main:destroy()
-  self.post_main:destroy()
-  self.effects:destroy()
-  self.ui:destroy()
-  self.main_ui:destroy()
+  self:destroy_layers()
   self.t:destroy()
   self.floor = nil
   self.main = nil
@@ -179,24 +174,17 @@ function MainMenu:update(dt)
 
   if not self.paused and not self.transitioning then
     star_group:update(dt*slow_amount)
-    self.floor:update(dt*slow_amount)
-    self.main:update(dt*slow_amount)
-    self.post_main:update(dt*slow_amount)
-    self.effects:update(dt*slow_amount)
-    self.main_ui:update(dt*slow_amount)
+    self:update_layers(dt*slow_amount, {'floor', 'main', 'post_main', 'effects', 'main_ui'})
     if self.title_text then self.title_text:update(dt) end
-    self.ui:update(dt*slow_amount)
+    self:update_layers(dt*slow_amount, {'ui'})
   else
-    self.ui:update(dt*slow_amount)
+    self:update_layers(dt*slow_amount, {'ui'})
   end
 end
 
 
 function MainMenu:draw()
-  self.floor:draw()
-  self.main:draw()
-  self.post_main:draw()
-  self.effects:draw()
+  self:draw_layers{'floor', 'main', 'post_main', 'effects'}
   graphics.draw_with_mask(function()
     star_canvas:draw(0, 0, 0, 1, 1)
   end, function()
@@ -206,8 +194,8 @@ function MainMenu:draw()
   end, true)
   graphics.rectangle(gw/2, gh/2, 2*gw, 2*gh, nil, nil, modal_transparent)
 
-  self.main_ui:draw()
+  self:draw_layers{'main_ui'}
   self.title_text:draw(60, gh/2 - 40)
   if self.paused then graphics.rectangle(gw/2, gh/2, 2*gw, 2*gh, nil, nil, modal_transparent) end
-  self.ui:draw()
+  self:draw_layers{'ui'}
 end

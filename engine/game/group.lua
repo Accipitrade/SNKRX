@@ -41,9 +41,7 @@ function Group:init()
   EngineNode.init_node(self)
   self.t = Trigger()
   self.camera = camera
-  self.objects = {}
-  self.objects.by_id = {}
-  self.objects.by_class = {}
+  self.objects = self.children
   self.cells = {}
   self.cell_size = 64
   return self
@@ -74,10 +72,7 @@ function Group:update(dt)
   for i = #self.objects, 1, -1 do
     if self.objects[i].dead then
       if self.objects[i].destroy then self.objects[i]:destroy() end
-      self.objects.by_id[self.objects[i].id] = nil
-      table.delete(self.objects.by_class[getmetatable(self.objects[i])], function(v) return v.id == self.objects[i].id end)
       self:remove(self.objects[i])
-      table.remove(self.objects, i)
     end
   end
 end
@@ -165,12 +160,11 @@ end
 
 function Group:destroy()
   for _, object in ipairs(self.objects) do if object.destroy then object:destroy() end end
-  self.objects = {}
-  self.objects.by_id = {}
-  self.objects.by_class = {}
   self.children = {}
   self.children.by_tag = {}
   self.children.by_id = {}
+  self.children.by_class = {}
+  self.objects = self.children
   if self.world then
     self.world:destroy()
     self.world = nil
@@ -190,11 +184,25 @@ function Group:add(object)
   object.group = self
 
   if not object.id then object.id = random:uid() end
+  EngineNode.append(self, object, object.node_tag)
   self.objects.by_id[object.id] = object
   if not self.objects.by_class[class] then self.objects.by_class[class] = {} end
-  table.insert(self.objects.by_class[class], object)
-  table.insert(self.objects, object)
-  self:append(object, object.node_tag)
+  if not table.any(self.objects.by_class[class], function(v) return v == object end) then
+    table.insert(self.objects.by_class[class], object)
+  end
+  return object
+end
+
+
+function Group:remove(object)
+  if not object then return end
+  local class = getmetatable(object)
+  if object.id then self.objects.by_id[object.id] = nil end
+  if self.objects.by_class[class] then
+    table.delete(self.objects.by_class[class], function(v) return v == object end)
+  end
+  EngineNode.remove(self, object)
+  if object.group == self then object.group = nil end
   return object
 end
 

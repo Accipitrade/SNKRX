@@ -7,9 +7,9 @@ end
 
 function Media:on_enter(from)
   camera.x, camera.y = gw/2, gh/2
-  self.main = Group()
-  self.effects = Group()
-  self.ui = Group()
+  self.main = self:add_layer('main', Group())
+  self.effects = self:add_layer('effects', Group())
+  self.ui = self:add_layer('ui', Group())
 
   graphics.set_background_color(blue[0])
   Text2{group = self.ui, x = gw/2, y = gh/2, lines = {
@@ -20,16 +20,12 @@ end
 
 
 function Media:update(dt)
-  self.main:update(dt*slow_amount)
-  self.effects:update(dt*slow_amount)
-  self.ui:update(dt*slow_amount)
+  self:update_layers(dt*slow_amount, {'main', 'effects', 'ui'})
 end
 
 
 function Media:draw()
-  self.main:draw()
-  self.effects:draw()
-  self.ui:draw()
+  self:draw_layers{'main', 'effects', 'ui'}
 
   mercenary:draw(30, 30, 0, 1, 1, 0, 0, yellow2[-5])
 end

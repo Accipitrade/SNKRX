@@ -29,12 +29,12 @@ function Arena:on_enter(from, level, loop, units, passives, shop_level, shop_xp,
   steam.friends.setRichPresence('steam_display', '#StatusFull')
   steam.friends.setRichPresence('text', 'Arena - Level ' .. self.level)
 
-  self.floor = Group()
-  self.main = Group():set_as_physics_world(32, 0, 0, {'player', 'enemy', 'projectile', 'enemy_projectile', 'force_field', 'ghost'})
-  self.post_main = Group()
-  self.effects = Group()
-  self.ui = Group()
-  self.credits = Group()
+  self.floor = self:add_layer('floor', Group())
+  self.main = self:add_layer('main', Group():set_as_physics_world(32, 0, 0, {'player', 'enemy', 'projectile', 'enemy_projectile', 'force_field', 'ghost'}))
+  self.post_main = self:add_layer('post_main', Group())
+  self.effects = self:add_layer('effects', Group())
+  self.ui = self:add_layer('ui', Group())
+  self.credits = self:add_layer('credits', Group())
   self.main:disable_collision_between('player', 'player')
   self.main:disable_collision_between('player', 'projectile')
   self.main:disable_collision_between('player', 'enemy_projectile')
@@ -324,12 +324,7 @@ end
 
 
 function Arena:on_exit()
-  self.floor:destroy()
-  self.main:destroy()
-  self.post_main:destroy()
-  self.effects:destroy()
-  self.ui:destroy()
-  self.credits:destroy()
+  self:destroy_layers()
   self.t:destroy()
   self.floor = nil
   self.main = nil
@@ -410,12 +405,10 @@ function Arena:update(dt)
   main_song_instance.pitch = math.clamp(slow_amount*music_slow_amount, 0.05, 1)
 
   star_group:update(dt*slow_amount)
-  self.floor:update(dt*slow_amount)
-  self.main:update(dt*slow_amount*self.main_slow_amount)
-  self.post_main:update(dt*slow_amount)
-  self.effects:update(dt*slow_amount)
-  self.ui:update(dt*slow_amount)
-  self.credits:update(dt)
+  self:update_layers(dt*slow_amount, {'floor', 'main', 'post_main', 'effects', 'ui', 'credits'}, {
+    main = dt*slow_amount*self.main_slow_amount,
+    credits = dt,
+  })
 end
 
 
@@ -753,10 +746,7 @@ end
 
 
 function Arena:draw()
-  self.floor:draw()
-  self.main:draw()
-  self.post_main:draw()
-  self.effects:draw()
+  self:draw_layers{'floor', 'main', 'post_main', 'effects'}
 
   graphics.draw_with_mask(function()
     star_canvas:draw(0, 0, 0, 1, 1)
@@ -804,12 +794,12 @@ function Arena:draw()
 
   if self.level == 20 and self.trailer then graphics.rectangle(gw/2, gh/2, 2*gw, 2*gh, nil, nil, modal_transparent) end
   if self.choosing_passives or self.won or self.paused or self.died then graphics.rectangle(gw/2, gh/2, 2*gw, 2*gh, nil, nil, modal_transparent) end
-  self.ui:draw()
+  self:draw_layers{'ui'}
 
   if self.shop_text then self.shop_text:draw(gw - 40, gh - 17) end
 
   if self.in_credits then graphics.rectangle(gw/2, gh/2, 2*gw, 2*gh, nil, nil, modal_transparent_2) end
-  self.credits:draw()
+  self:draw_layers{'credits'}
 end
 
 

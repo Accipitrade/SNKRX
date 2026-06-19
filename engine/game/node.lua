@@ -13,6 +13,7 @@ function EngineNode:init_node(args)
   self.children = {}
   self.children.by_tag = {}
   self.children.by_id = {}
+  self.children.by_class = {}
   self.node_tag = args.node_tag
   self.id = args.id or self.id or random:uid()
   return self
@@ -39,11 +40,22 @@ function EngineNode:append(child, tag)
     child:detach()
   end
 
+  tag = tag or child.node_tag
+  if child.node_parent == self and child.node_tag and child.node_tag ~= tag then
+    self.children.by_tag[child.node_tag] = nil
+    self[child.node_tag] = nil
+  end
+  if tag and self.children.by_tag[tag] and self.children.by_tag[tag] ~= child then
+    self:remove(self.children.by_tag[tag])
+  end
+
   child.node_parent = self
   if not child.id then child.id = random:uid() end
   if tag then child.node_tag = tag end
 
-  table.insert(self.children, child)
+  if not table.any(self.children, function(v) return v == child end) then
+    table.insert(self.children, child)
+  end
   self.children.by_id[child.id] = child
   if child.node_tag then
     self.children.by_tag[child.node_tag] = child
@@ -117,8 +129,12 @@ function EngineNode:destroy()
     if child.destroy then child:destroy() end
     child.node_parent = nil
   end
+  for tag in pairs(self.children.by_tag) do
+    self[tag] = nil
+  end
   self.children = {}
   self.children.by_tag = {}
   self.children.by_id = {}
+  self.children.by_class = {}
   return self
 end
